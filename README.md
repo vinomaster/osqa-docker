@@ -15,6 +15,7 @@ On your Docker Environment:
 
 ## Status
 This project attempts to containerize teh OSQA solution using [Ubuntu+Apache+MySQL](http://wiki.osqa.net/display/docs/Ubuntu+with+Apache+and+MySQL).
+
 **NOTE**: This project is *Incomplete*. It is a work-in-progress, as serveral build errors still exist.
 
 1. Unable to build using django trunk.
