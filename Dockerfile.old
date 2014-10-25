@@ -1,0 +1,41 @@
+# Open Source Question Answer 
+# Dockerfile - Using Source Code from GitHub
+
+# Install Dependencies
+FROM ubuntu:14.04
+RUN apt-get update
+RUN apt-get -y install git
+RUN apt-get -y install openssh-server apache2 libapache2-mod-wsgi supervisor
+RUN mkdir -p /var/lock/apache2 /var/run/apache2 /var/run/sshd /var/log/supervisor
+RUN apt-get -y install mysql-server mysql-client
+RUN apt-get -y install python python-setuptools python-openid
+RUN apt-get -y install python-mysqldb
+RUN easy_install South django==1.6 django-debug-toolbar django-endless-pagination markdown \
+    html5lib python-openid pytz
+RUN git clone https://github.com/dzone/osqa.git
+# Configure Apache
+RUN rm /etc/apache2/sites-available/000-default.conf \
+    /etc/apache2/sites-available/default-ssl.conf
+RUN rm /etc/apache2/sites-enabled/000-default.conf
+# Configure MySQL
+RUN sed -i -e"s/^bind-address\s*=\s*127.0.0.1/bind-address = 0.0.0.0/" /etc/mysql/my.cnf
+ADD prepare-mysql.sh /tmp/prepare-mysql.sh
+RUN /bin/sh /tmp/prepare-mysql.sh
+VOLUME ["/var/lib/mysql"]
+# Set root password
+RUN echo "root:root" | chpasswd
+# Configure OSQA Server
+RUN cp /osqa/osqa.wsgi.dist /osqa/osqa.wsgi
+COPY osqa.conf /etc/apache2/sites-available/osqa.conf
+RUN ln -s /etc/apache2/sites-available/osqa.conf /etc/apache2/sites-enabled/osqa.conf
+ADD settings_local.py /osqa/settings_local.py
+ADD prime-osqa-db.sh /tmp/prime-osqa-db.sh
+#ADD envvars /etc/apache2/envvars
+RUN useradd -g www-data osqa
+RUN chown -R osqa:www-data /osqa
+RUN chmod -R g+w /osqa/forum/upfiles
+RUN chmod -R g+w /osqa/log
+# Configure Supervisord
+COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+EXPOSE 22 80 3306
+CMD ["/tmp/prime-osqa-db.sh"]
