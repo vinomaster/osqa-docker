@@ -6,8 +6,8 @@ This project provides the resources necessary to create a Docker container for t
 Create a Docker image for publication to [Docker Hub](https://hub.docker.com).
 
 ## Usage Instructions
-
 On your Docker Environment:
+
 1. Clone the GitHub Repo
 2. cd osqa-docker
 3. docker build -t vinomaster/osqa-docker .
